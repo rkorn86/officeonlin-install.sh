@@ -4,7 +4,6 @@ SearchGitCommit() {
   # (change branch and head to a commit found by search on the repo tree)
   # return also a trigger value "repChanged" that's true if the repo must be updated
   # Usage = FundGitCommit [--branch|-t [branch name], --commit|-t [commit], --tag|-t [tag]]
-  ##CONSTRAINT : if commit|tag is used it must exist in the current/new branch
   # options precedence: branch + commit > tag > default
   # accept long options with '=' (--branch="master"|--branch master)
   # accept long and short commit hash
@@ -75,9 +74,6 @@ SearchGitCommit() {
       # check if the commit doesn't exist
       echo "Error: $myCommit is not a valid commit." >&2
       return 1
-    elif ! git log --pretty=oneline "origin/$HeadBranch" | grep -q "$myCommit"; then
-      echo "Error: $myCommit is not in branch $HeadBranch." >&2
-      return 1
     fi
     #find the commit's long hash from the short hash
     myCommit=$(git log --pretty=oneline "origin/$HeadBranch" | grep "$myCommit"|awk '{print $1}')
@@ -86,14 +82,10 @@ SearchGitCommit() {
     return 0
   fi
   if [ -n "$myTag" ]; then
-     if ! git ls-remote -t | grep -q tags/${myTag}^; then
-       # check if the Tag doesn't exist
-       echo "Error: $myTag is not a valid Tag." >&2
-       return 1
-     elif ! git log --simplify-by-decoration --decorate --pretty=oneline "origin/$HeadBranch" | grep -Eq "tag:.*$myTag"; then
-       echo "Error: $myTag is not in branch $HeadBranch." >&2
-       return 1
-     fi
+    if ! git ls-remote -t | grep -q tags/${myTag}^; then
+      # check if the Tag doesn't exist
+      echo "Error: $myTag is not a valid Tag." >&2
+     return 1
     myTagCommit=$(git log --simplify-by-decoration --decorate --pretty=oneline "origin/$HeadBranch" | grep -Em 1 "tag:.*$myTag"|awk '{print $1}')
     [ "${myTagCommit}" != "${HeadCommit}" ] && echo "git reset --hard ${myTagCommit};" && rcode=true
     echo "repChanged=$rcode"
