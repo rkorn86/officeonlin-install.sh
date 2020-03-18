@@ -85,7 +85,8 @@ SearchGitCommit() {
     if ! git ls-remote -t | grep -q tags/${myTag}^; then
       # check if the Tag doesn't exist
       echo "Error: $myTag is not a valid Tag." >&2
-     return 1
+      return 1
+    fi
     echo "git reset --hard tags/${myTag};" && rcode=true
     echo "repChanged=$rcode"
     return 0
