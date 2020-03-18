@@ -76,7 +76,7 @@ SearchGitCommit() {
       return 1
     fi
     #find the commit's long hash from the short hash
-    myCommit=$(git log --pretty=oneline "origin/$HeadBranch" | grep "$myCommit"|awk '{print $1}')
+    myCommit=$(git rev-parse "$myCommit")
     [ "${myCommit}" != "${HeadCommit}" ] && echo "git reset --hard ${myCommit};" && rcode=true
     echo "repChanged=$rcode"
     return 0
@@ -86,8 +86,7 @@ SearchGitCommit() {
       # check if the Tag doesn't exist
       echo "Error: $myTag is not a valid Tag." >&2
      return 1
-    myTagCommit=$(git log --simplify-by-decoration --decorate --pretty=oneline "origin/$HeadBranch" | grep -Em 1 "tag:.*$myTag"|awk '{print $1}')
-    [ "${myTagCommit}" != "${HeadCommit}" ] && echo "git reset --hard ${myTagCommit};" && rcode=true
+    echo "git reset --hard tags/${myTag};" && rcode=true
     echo "repChanged=$rcode"
     return 0
   else
